@@ -27,7 +27,7 @@ jobs:
         run: |
           # Trigger the job using the Databricks CLI
           # The --git-commit-hash option ensures the job uses the latest code
-          databricks jobs run now ${{ env.DATABRICKS_JOB_ID }}
+          databricks jobs run-now ${{ env.DATABRICKS_JOB_ID }}
           echo "Job triggered"
 
       - name: Get run details
