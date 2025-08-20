@@ -1,0 +1,44 @@
+name: Run Databricks Job on Push
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**'
+
+jobs:
+  run-databricks-job:
+    runs-on: ubuntu-latest
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_PAT }}
+      DATABRICKS_JOB_ID: '839156090872022'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Trigger Databricks Job
+        id: trigger-job
+        run: |
+          # Get the latest commit hash to ensure reproducibility
+          latest_commit=$(git rev-parse HEAD)
+
+          # Trigger the job using the Databricks CLI
+          # The --git-commit-hash option ensures the job uses the latest code
+          databricks jobs run now --job-id ${{ env.DATABRICKS_JOB_ID }} --git-commit-hash $latest_commit
+          echo "Job triggered with commit hash: $latest_commit"
+
+      - name: Get run details
+        id: get-run-details
+        run: |
+          # The Databricks CLI command above returns the run ID.
+          # We can use that to check the job status.
+          # Example: If your job takes a long time, you might want to add a wait step.
+          # For this example, we'll just print the run ID for confirmation.
+          RUN_ID=$(echo '${{ steps.trigger-job.outputs.run-id }}')
+          echo "Run ID: $RUN_ID"
